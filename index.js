@@ -14,9 +14,8 @@ getDescription = async (url) => {
     try {
       const response = await axios.get(url);
       const $ = cheerio.load(response.data);
-      const descriptionMetaTag = $('meta[name="description"]');
-      const description = descriptionMetaTag.attr("content");
-      return description;
+      const descriptionMetaTag = $('div[class="caas-body"]');
+      return descriptionMetaTag.contents().map((i, el) => $(el).text()).get().join('. ').replaceAll("..", ".").replaceAll("  ", " ");
     } catch (error) {
       console.log("An error occurred while fetching the page:", error);
       return null;
