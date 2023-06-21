@@ -49,6 +49,7 @@ app.get('/topic/:topic', async (req, res) => {
     let rssData = await Promise.all(
       parsedData.map(async item => {
         const description = await getDescription(item.link[0]);
+        if (!description) return null;
         return {
           title: item.title[0],
           link: item.link[0],
@@ -58,11 +59,13 @@ app.get('/topic/:topic', async (req, res) => {
         };
       })
     );
+    rssData = rssData.filter(item => item !== null);
     rssData = rssData.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
     cache[topic] = rssData;
     res.json(rssData);
   } catch (error) {
+    console.log(error)
     console.error('Error fetching RSS data');
     res.status(500).json({ error: 'Error fetching RSS data' });
   }
