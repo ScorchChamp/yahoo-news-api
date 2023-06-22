@@ -12,11 +12,16 @@ let cacheTimes = {}
 parseXML = (xmlData) => new Promise((resolve, reject) => parseString(xmlData, (error, result) => error ? reject(error) : resolve(result)));
 getDescription = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+      }
+    });
     const $ = cheerio.load(response.data);
     const descriptionMetaTag = $('div[class="caas-body"]');
     return descriptionMetaTag.contents().map((i, el) => $(el).text()).get().join('. ').replaceAll("..", ".").replaceAll("  ", " ");
   } catch (error) {
+    console.log(url)
     console.log("An error occurred while fetching the page");
     return null;
   }
@@ -29,7 +34,33 @@ app.get('/topic/:topic', async (req, res) => {
   }
   try {
     cacheTimes[topic] = Date.now();
-    const url = `https://${topic}.yahoo.com/rss/`;
+    let url = '';
+    switch (topic) {
+      case 'news':
+        url = 'https://www.yahoo.com/news/rss';
+        break;
+      case 'finance':
+        url = 'https://finance.yahoo.com/news/rssindex';
+        break;
+      case 'sports':
+        url = 'https://sports.yahoo.com/rss/';
+        break;
+      case 'entertainment':
+        url = 'https://www.yahoo.com/entertainment/rss';
+        break;
+      case 'politics':
+        url = 'https://www.yahoo.com/news/politics/rss';
+        break;
+      case 'science':
+        url = 'https://www.yahoo.com/news/science/rss';
+        break;
+      case 'lifestyle':
+        url = 'https://www.yahoo.com/lifestyle/rss';
+        break;
+      default:
+        return res.status(404).json({ error: 'Page Not found' });
+    }
+
     let response;
     try {
       response = await axios.get(url);
