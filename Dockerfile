@@ -1,11 +1,11 @@
-FROM node:16
+FROM alpine:latest
 VOLUME /config
 
 WORKDIR /app
 
 COPY . .
 
-RUN npm install
+RUN apk add --no-cache nodejs npm && npm install
 
 EXPOSE 3000
 
